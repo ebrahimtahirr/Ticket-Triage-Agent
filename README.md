@@ -71,7 +71,8 @@ Built in Power BI, connected live to the same Google Sheets audit trail the agen
 
 Shows: total volume, auto-resolve vs. escalate split, category and urgency breakdowns, and — the key piece — a status breakdown of what happened to escalated tickets after the fact (resolved / in progress / pending). That last part is what turns this from "an AI tool" into "evidence the AI tool is trusted and used," which is the part most AI pilots skip.
 
-*(Add a dashboard screenshot here.)*
+<img width="2298" height="1290" alt="image" src="https://github.com/user-attachments/assets/85d3b13e-4e43-45fb-bd62-89c726530030" />
+
 
 ## Tech stack
 
