@@ -1,0 +1,684 @@
+{
+  "name": "Ticket Triage",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields').item.json.ticket_text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a support ticket classifier for a mid-sized B2B SaaS company.  For each ticket, output ONLY valid JSON with these fields, no text outside the JSON:  {   \"category\": \"billing | bug | feature_request | access | complaint | other\",   \"urgency\": \"low | medium | high\",   \"sentiment\": \"neutral | frustrated | angry | positive\",   \"summary\": \"one sentence describing the actual issue\" }  Urgency guidance: mark \"high\" if the customer mentions being blocked from working, an active outage, an imminent deadline/demo, or explicit anger/threat to cancel. Otherwise \"medium\" for real but non-blocking issues, \"low\" for general questions. Output raw JSON only. Do not wrap it in markdown code fences or backticks. Your response must start with { and end with }.\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -208,
+        -112
+      ],
+      "id": "4146ab99-464d-4d17-a0bb-b36349a84413",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 4.5"
+        },
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        -136,
+        120
+      ],
+      "id": "35669aa9-46de-4d53-a47c-da8f9b22d4b8",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "1AI15qUNhYIUKcCq",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\nconst raw = item.text \n  ?? item.response?.generations?.[0]?.[0]?.text \n  ?? item.output \n  ?? item.response;\n\nif (!raw) {\n  throw new Error('Could not find response text. Available fields: ' + Object.keys(item).join(', '));\n}\n\nconst cleaned = raw.replace(/```json\\n?/g, '').replace(/```/g, '').trim();\nconst parsed = JSON.parse(cleaned);\n\nreturn [{ json: parsed }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        -112
+      ],
+      "id": "9b079c94-4c80-4e26-97d2-26d4cac45b03",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Original ticket: {{ $('Edit Fields').item.json.ticket_text }}\n\nClassification:\nCategory: {{ $('Code in JavaScript').item.json.category }}\nUrgency: {{ $('Code in JavaScript').item.json.urgency }}\nSentiment: {{ $('Code in JavaScript').item.json.sentiment }}\nSummary: {{ $('Code in JavaScript').item.json.summary }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a support response drafter for a mid-sized B2B SaaS company. You will receive a ticket's classification and its original text. Check it against this FAQ knowledge base:  1. Password/access reset: You can reset your password from the login page by clicking \"Forgot Password\" and following the emailed link. If the email doesn't arrive within 5 minutes, check spam or contact us to manually reset it. 2. Billing/payment update: You can update your payment method under Account Settings > Billing > Payment Methods. Updating the card there automatically retries any declined charge. 3. Data export: You can export your data from Account Settings > Data > Export. Exports generate as a CSV and are emailed within a few minutes. 4. Feature not showing / permissions: Some features are limited by plan tier. Check Account Settings > Plan to see what's included, or upgrade to unlock additional features. 5. Cancel/downgrade subscription: You can cancel or downgrade under Account Settings > Billing > Manage Plan. Downgrades take effect at the end of the current billing cycle.  Decision rule: if the ticket clearly matches one of these FAQ topics AND urgency is not \"high\", draft a friendly customer-facing response using that FAQ answer, personalized to their specific situation. If the ticket does not match any FAQ topic, OR urgency is \"high\" regardless of match, do not draft a customer response — instead write a concise internal handoff summary for a human agent explaining the issue and why it needs a human.  Output raw JSON only. Do not wrap it in markdown code fences or backticks. Your response must start with { and end with }.  { \"faq_match\": true if the FAQ answer directly and substantially addresses the customer's main question, even if it doesn't cover every possible detail or edge case. Set it to false only if the FAQ topic doesn't really apply, or if the customer is asking for something meaningfully different from what the FAQ covers — like an investigation, a specific reason, or an exception, rather than a how-to.,   \"action\": \"auto_respond\" or \"escalate_to_human\",   \"draft_text\": \"the customer-facing response OR the internal handoff summary, matching the action above\" }"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        368,
+        -112
+      ],
+      "id": "274dafe7-8c95-412b-8018-8a8005a6d634",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 4.5"
+        },
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        440,
+        120
+      ],
+      "id": "ee334fca-3046-47d8-9006-9376827244e0",
+      "name": "Anthropic Chat Model1",
+      "credentials": {
+        "anthropicApi": {
+          "id": "1AI15qUNhYIUKcCq",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\nconst raw = item.text \n  ?? item.response?.generations?.[0]?.[0]?.text \n  ?? item.output \n  ?? item.response;\n\nif (!raw) {\n  throw new Error('Could not find response text. Available fields: ' + Object.keys(item).join(', '));\n}\n\nconst cleaned = raw.replace(/```json\\n?/g, '').replace(/```/g, '').trim();\nconst parsed = JSON.parse(cleaned);\n\n// Guard against invisible whitespace breaking downstream comparisons\nif (typeof parsed.action === 'string') parsed.action = parsed.action.trim();\nif (typeof parsed.category === 'string') parsed.category = parsed.category.trim();\nif (typeof parsed.urgency === 'string') parsed.urgency = parsed.urgency.trim();\n\nreturn [{ json: parsed }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -112
+      ],
+      "id": "a43b30a8-1c15-4fa8-8f11-21af7d83d4ad",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        -208
+      ],
+      "id": "1a2f4eb1-0e4d-490d-a9ee-5bde7c5c701a",
+      "name": "Start"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c342de6e-3a3f-448c-b953-9a4d61ddc9ae",
+              "leftValue": "= {{ $json.action }}",
+              "rightValue": "escalate",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        944,
+        -112
+      ],
+      "id": "3d7367c1-4d66-41ea-8121-970abc42e11c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "=🚨 *High-priority ticket needs a human*\n\n*Category:* {{ $('Code in JavaScript').item.json.category }}\n*Urgency:* {{ $('Code in JavaScript').item.json.urgency }}\n*Sentiment:* {{ $('Code in JavaScript').item.json.sentiment }}\n\n*Context for agent:*\n{{ $('Code in JavaScript1').item.json.draft_text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1168,
+        -208
+      ],
+      "id": "73e66d72-10f5-4969-9f62-30bfb556e99b",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1iF1RVoo43FrKpukK6dUKGFUtUtdOPkiTzBHJHKG2sAE",
+          "mode": "list",
+          "cachedResultName": "Ticket Triage",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iF1RVoo43FrKpukK6dUKGFUtUtdOPkiTzBHJHKG2sAE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iF1RVoo43FrKpukK6dUKGFUtUtdOPkiTzBHJHKG2sAE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $now.toFormat('yyyy-MM-dd HH:mm') }}",
+            "ticket_text": "={{ $('Edit Fields').item.json.ticket_text }}",
+            "category": "={{ $('Code in JavaScript').item.json.category }}",
+            "urgency": "={{ $('Code in JavaScript').item.json.urgency }}",
+            "sentiment": "={{ $('Code in JavaScript').item.json.sentiment }}",
+            "faq_match": "={{ $('Code in JavaScript1').item.json.faq_match }}",
+            "action": "={{ $('Code in JavaScript1').item.json.action }}",
+            "draft_text": "={{ $('Code in JavaScript1').item.json.draft_text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ticket_text",
+              "displayName": "ticket_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "urgency",
+              "displayName": "urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "faq_match",
+              "displayName": "faq_match",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "action",
+              "displayName": "action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "draft_text",
+              "displayName": "draft_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1392,
+        -208
+      ],
+      "id": "4f8d5226-5e80-4fd6-8600-c7b33c4e621d",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4O1feq7xdA7ogOax",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "da7ceb05-f6df-4459-9190-cfe43083d55a",
+              "name": "ticket_text",
+              "value": "= {{ $json.ticket_text ?? \"how do i update the card on file, my old one expired\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -432,
+        -112
+      ],
+      "id": "c29af5e7-3706-4dd7-a20e-040a47b8a472",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1iF1RVoo43FrKpukK6dUKGFUtUtdOPkiTzBHJHKG2sAE",
+          "mode": "list",
+          "cachedResultName": "Ticket Triage",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iF1RVoo43FrKpukK6dUKGFUtUtdOPkiTzBHJHKG2sAE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iF1RVoo43FrKpukK6dUKGFUtUtdOPkiTzBHJHKG2sAE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $now.toFormat('yyyy-MM-dd HH:mm') }}",
+            "ticket_text": "={{ $('Edit Fields').item.json.ticket_text }}",
+            "category": "={{ $('Code in JavaScript').item.json.category }}",
+            "urgency": "={{ $('Code in JavaScript').item.json.urgency }}",
+            "sentiment": "={{ $('Code in JavaScript').item.json.sentiment }}",
+            "faq_match": "={{ $('Code in JavaScript1').item.json.faq_match }}",
+            "action": "={{ $('Code in JavaScript1').item.json.action }}",
+            "draft_text": "={{ $('Code in JavaScript1').item.json.draft_text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ticket_text",
+              "displayName": "ticket_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "urgency",
+              "displayName": "urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "faq_match",
+              "displayName": "faq_match",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "action",
+              "displayName": "action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "draft_text",
+              "displayName": "draft_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1168,
+        -16
+      ],
+      "id": "1efc74e5-169b-4298-9290-bf66bb983b35",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4O1feq7xdA7ogOax",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "ebby6215@gmail.com",
+        "subject": "Re: Your support request",
+        "emailType": "text",
+        "message": "={{ $('Code in JavaScript1').item.json.draft_text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1392,
+        -16
+      ],
+      "id": "0d824091-33e6-48bf-b22a-4fd97a847057",
+      "name": "Send a message",
+      "webhookId": "f75004a0-696c-4331-9110-773e0817c238",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "8Qy9StMzUZicSMxq",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -656,
+        -16
+      ],
+      "id": "00e3414f-9d33-4611-9b38-f76adf780c9e",
+      "name": "TicketTrigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "TicketTrigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "82b5174a-54a8-4186-8274-bff007cb1d39",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b3e52d6af68fd57a48a6c01c5e77bcfcf73344b9c8698c0aa49ea96fd9c30fa8"
+  },
+  "nodeGroups": [],
+  "id": "fDPpYL5CV3s10Ka3",
+  "tags": []
+}
