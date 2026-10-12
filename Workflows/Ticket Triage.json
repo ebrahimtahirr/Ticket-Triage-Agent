@@ -198,17 +198,17 @@
         "operation": "append",
         "documentId": {
           "__rl": true,
-          "value": "1iF1RVoo43FrKpukK6dUKGFUtUtdOPkiTzBHJHKG2sAE",
+          "value": "YOUR_SHEET_ID",
           "mode": "list",
           "cachedResultName": "Ticket Triage",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iF1RVoo43FrKpukK6dUKGFUtUtdOPkiTzBHJHKG2sAE/edit?usp=drivesdk"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iF1RVoo43FrKpukK6dUKGFUtUtdOPkiTzBHJHKG2sAE/edit#gid=0"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=0"
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -354,17 +354,17 @@
         "operation": "append",
         "documentId": {
           "__rl": true,
-          "value": "1iF1RVoo43FrKpukK6dUKGFUtUtdOPkiTzBHJHKG2sAE",
+          "value": "YOUR_SHEET_ID",
           "mode": "list",
           "cachedResultName": "Ticket Triage",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iF1RVoo43FrKpukK6dUKGFUtUtdOPkiTzBHJHKG2sAE/edit?usp=drivesdk"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iF1RVoo43FrKpukK6dUKGFUtUtdOPkiTzBHJHKG2sAE/edit#gid=0"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=0"
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -484,7 +484,7 @@
     },
     {
       "parameters": {
-        "sendTo": "ebby6215@gmail.com",
+        "sendTo": "you@example.com",
         "subject": "Re: Your support request",
         "emailType": "text",
         "message": "={{ $('Code in JavaScript1').item.json.draft_text }}",
